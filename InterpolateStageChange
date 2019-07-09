@@ -1,0 +1,82 @@
+##Extrapolate a gradient of HI and Stage Change from the 17 gage sites to each 1 mile river bin##
+#Read HY7
+setwd("U:/!Hydropsyche2018/brms/Rworkspaces/NewStage")
+LTG<-read.csv("HY7.csv")
+dim(LTG) #2194
+	
+##Import table "Qmeans" of gage data with rkms that will be hardpoints for calculating gradient (NOTE: Grand Canyon stage change values were overwritten by a custom model in 2019)
+Gage<-read.csv("C:/Users/ametcalfe/Desktop/Rcode/HydropsychePaper/GitHub/Qmeans.csv")
+
+##Using KM instead of RM because they are consistent within segments and count UP rather than all over like RM system
+
+#Extrapolate gradient based on river mile for the correct gage per sample
+#HInew<-HI_US * (1 - (RMnew - RMus/RMds-RMus)) + HI_DS * (1 - (RMnew - RMus/RMds-RMus))
+#Code from J. Muehlbauer
+
+
+
+HI_G<-ifelse(LTG$GageSeg=="FONT", Gage[1,4],
+	ifelse(LTG$GageSeg=="FGD",(Gage[2,4] * (1-((LTG$DamDistKM-Gage[2,6])/(Gage[3,6]-Gage[2,6]))) + Gage[3,4] * ((LTG$DamDistKM-Gage[2,6])/(Gage[3,6]-Gage[2,6]))),
+	ifelse(LTG$GageSeg=="LODORE",(Gage[3,4] * (1-((LTG$DamDistKM-Gage[3,6])/(Gage[4,6]-Gage[3,6]))) + Gage[4,4] * ((LTG$DamDistKM-Gage[3,6])/(Gage[4,6]-Gage[3,6]))),
+	ifelse(LTG$GageSeg=="JENSEN",(Gage[4,4] * (1-((LTG$DamDistKM-Gage[4,6])/(Gage[5,6]-Gage[4,6]))) + Gage[5,4] * ((LTG$DamDistKM-Gage[4,6])/(Gage[5,6]-Gage[4,6]))),
+	ifelse(LTG$GageSeg=="OURAY",(Gage[5,4] * (1-((LTG$DamDistKM-Gage[5,6])/(Gage[6,6]-Gage[5,6]))) + Gage[6,4] * ((LTG$DamDistKM-Gage[5,6])/(Gage[6,6]-Gage[5,6]))),
+	ifelse(LTG$GageSeg=="GREEN",(Gage[6,4] * (1-((LTG$DamDistKM-Gage[6,6])/(Gage[7,6]-Gage[6,6]))) + Gage[7,4] * ((LTG$DamDistKM-Gage[6,6])/(Gage[7,6]-Gage[6,6]))),
+	ifelse(LTG$GageSeg=="MINERAL",(Gage[7,4] * (1-((LTG$DamDistKM-Gage[7,6])/(Gage[10,6]-Gage[7,6]))) + Gage[10,4] * ((LTG$DamDistKM-Gage[7,6])/(Gage[10,6]-Gage[7,6]))), #Using Cataract as end point for both Green and Cat
+	ifelse(LTG$GageSeg=="CISCO",(Gage[8,4] * (1-((LTG$DamDistKM-Gage[8,6])/(Gage[9,6]-Gage[8,6]))) + Gage[9,4] * ((LTG$DamDistKM-Gage[8,6])/(Gage[9,6]-Gage[8,6]))),
+	ifelse(LTG$GageSeg=="POTASH",(Gage[9,4] * (1-((LTG$DamDistKM-Gage[9,6])/(Gage[10,6]-Gage[9,6]))) + Gage[10,4] * ((LTG$DamDistKM-Gage[9,6])/(Gage[10,6]-Gage[9,6]))), #Using Cataract as end point
+	ifelse(LTG$GageSeg=="CATARACT", Gage[10,4],
+	ifelse(LTG$GageSeg=="LEES" & LTG$DamDistKM>=25,(Gage[11,4] * (1-((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))) + Gage[12,4] * ((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))), 
+	ifelse(LTG$GageSeg=="LEES" & LTG$DamDistKM<25,Gage[11,4], 
+	ifelse(LTG$GageSeg=="PHANTOM" & LTG$DamDistKM>=25,(Gage[11,4] * (1-((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))) + Gage[12,4] * ((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))), 
+	ifelse(LTG$GageSeg=="PHANTOM",(Gage[12,4] * (1-((LTG$DamDistKM-Gage[12,6])/(Gage[13,6]-Gage[12,6]))) + Gage[13,4] * ((LTG$DamDistKM-Gage[12,6])/(Gage[13,6]-Gage[12,6]))), 
+	ifelse(LTG$GageSeg=="DIAMOND", Gage[13,4],
+	ifelse(LTG$GageSeg=="YAMPA", Gage[14,4],
+	ifelse(LTG$GageSeg=="GUNN", Gage[15,4],
+	ifelse(LTG$GageSeg=="DOLORES", Gage[16,4],
+	ifelse(LTG$GageSeg=="JUAN", Gage[17,4],
+	"poop")))))))))))))))))))
+	
+LTG$HI_gradient<-HI_G
+dim(LTG)
+
+
+##DO AGAIN WITH STAGE CHANGE##
+#Extrapolate gradient based on river mile for the correct gage per sample
+#HInew<-HI_US * (1 - (RMnew - RMus/RMds-RMus)) + HI_DS * (1 - (RMnew - RMus/RMds-RMus))
+SC_G<-ifelse(LTG$GageSeg=="FONT", Gage[1,5],
+	ifelse(LTG$GageSeg=="FGD",(Gage[2,5] * (1-((LTG$DamDistKM-Gage[2,6])/(Gage[3,6]-Gage[2,6]))) + Gage[3,5] * ((LTG$DamDistKM-Gage[2,6])/(Gage[3,6]-Gage[2,6]))),
+	ifelse(LTG$GageSeg=="LODORE",(Gage[3,5] * (1-((LTG$DamDistKM-Gage[3,6])/(Gage[4,6]-Gage[3,6]))) + Gage[4,5] * ((LTG$DamDistKM-Gage[3,6])/(Gage[4,6]-Gage[3,6]))),
+	ifelse(LTG$GageSeg=="JENSEN",(Gage[4,5] * (1-((LTG$DamDistKM-Gage[4,6])/(Gage[5,6]-Gage[4,6]))) + Gage[5,5] * ((LTG$DamDistKM-Gage[4,6])/(Gage[5,6]-Gage[4,6]))),
+	ifelse(LTG$GageSeg=="OURAY",(Gage[5,5] * (1-((LTG$DamDistKM-Gage[5,6])/(Gage[6,6]-Gage[5,6]))) + Gage[6,5] * ((LTG$DamDistKM-Gage[5,6])/(Gage[6,6]-Gage[5,6]))),
+	ifelse(LTG$GageSeg=="GREEN",(Gage[6,5] * (1-((LTG$DamDistKM-Gage[6,6])/(Gage[7,6]-Gage[6,6]))) + Gage[7,5] * ((LTG$DamDistKM-Gage[6,6])/(Gage[7,6]-Gage[6,6]))),
+	ifelse(LTG$GageSeg=="MINERAL",(Gage[7,5] * (1-((LTG$DamDistKM-Gage[7,6])/(Gage[10,6]-Gage[7,6]))) + Gage[10,5] * ((LTG$DamDistKM-Gage[7,6])/(Gage[10,6]-Gage[7,6]))), #Using Cataract as DS for both Green and Cat
+	ifelse(LTG$GageSeg=="CISCO",(Gage[8,5] * (1-((LTG$DamDistKM-Gage[8,6])/(Gage[9,6]-Gage[8,6]))) + Gage[9,5] * ((LTG$DamDistKM-Gage[8,6])/(Gage[9,6]-Gage[8,6]))),
+	ifelse(LTG$GageSeg=="POTASH",(Gage[9,5] * (1-((LTG$DamDistKM-Gage[9,6])/(Gage[10,6]-Gage[9,6]))) + Gage[10,5] * ((LTG$DamDistKM-Gage[9,6])/(Gage[10,6]-Gage[9,6]))), #Using Cataract as ds
+	ifelse(LTG$GageSeg=="CATARACT", Gage[10,5],
+	ifelse(LTG$GageSeg=="LEES" & LTG$DamDistKM>=25,(Gage[11,5] * (1-((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))) + Gage[12,5] * ((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))), 
+	ifelse(LTG$GageSeg=="PHANTOM" & LTG$DamDistKM<167,(Gage[11,5] * (1-((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))) + Gage[12,5] * ((LTG$DamDistKM-Gage[11,6])/(Gage[12,6]-Gage[11,6]))), 
+	ifelse(LTG$GageSeg=="LEES" & LTG$DamDistKM<25,Gage[11,5], 
+	ifelse(LTG$GageSeg=="PHANTOM" & LTG$DamDistKM>=167,(Gage[12,5] * (1-((LTG$DamDistKM-Gage[12,6])/(Gage[13,6]-Gage[12,6]))) + Gage[13,5] * ((LTG$DamDistKM-Gage[12,6])/(Gage[13,6]-Gage[12,6]))), 
+	ifelse(LTG$GageSeg=="DIAMOND",Gage[13,5],
+	ifelse(LTG$GageSeg=="YAMPA", Gage[14,5],
+	ifelse(LTG$GageSeg=="GUNN", Gage[15,5],
+	ifelse(LTG$GageSeg=="DOLORES", Gage[16,5],
+	ifelse(LTG$GageSeg=="JUAN", Gage[17,5],
+	"poop")))))))))))))))))))
+	
+	
+LTG$SC_gradient<-SC_G
+dim(LTG) #2194
+
+##Check for anomalies
+LTG$HI_gradient<-as.numeric(LTG$HI_gradient)
+LTG$SC_gradient<-as.numeric(LTG$SC_gradient)
+summary(LTG)
+Gage
+
+###Simplify to barcode, HI gradient, and Stage gradient
+head(LTG)
+LTGr<-LTG[,c(1,20,21)]
+head(LTGr)
+#write.csv(LTGr,"LTGradients.csv")
+
