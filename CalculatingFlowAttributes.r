@@ -22,3 +22,4 @@ LEESgage_hmin<-tapply(LEESgage$Height,LEESgage$Date,min)
 LEESgage$StageChange<-mean(LEESgage_hmax - LEESgage_hmin, na.rm=TRUE)
 LEES<-LEESgage[1,c(1,7:10),] #One line data frame for LEES with Site, MeanQ,SDQ, and HI
 LEES
+
