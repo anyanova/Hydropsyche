@@ -1,0 +1,406 @@
+##########################################
+library(ggplot2)
+library(gridExtra)
+library(plyr)
+library(lme4)
+library(lubridate)
+library(AICcmodavg)
+
+
+#Read in HYmorphologydata.csv
+setwd("C:/Users/ametcalfe/Desktop/Rcode/HydropsychePaper/GitHub")
+HYZ<-read.csv("HYmorphologydata.csv")
+
+
+
+##LINEAR MIXED EFFECTS MODELS##############
+###################LEG MODELS#############
+##########################################
+HYLEG<-HYZ
+head(HYLEG)
+HYLEG_F<-HYLEG[HYLEG$Sex=="F",]
+dim(HYLEG_F)
+
+##TIB FULL MODEL SET WITH RANDOM EFFECTS
+HTIB1<-lm(TibRatio~1, data=HYLEG_F)
+HTIB2<-lmer(TibRatio~1 + (1|SpeciesID), data=HYLEG_F)
+HTIB3<-lmer(TibRatio~1 + (1|SEGCODE), data=HYLEG_F)
+HTIB4<-lmer(TibRatio~1 + (1|SEGCODE) + (1|SpeciesID), data=HYLEG_F) 
+HTIB5<-lmer(TibRatio~zMeanTemp + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTIB6<-lmer(TibRatio~zRangeTemp + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+HTIB7<-lmer(TibRatio~zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+HTIB8<-lmer(TibRatio~zStage_cm + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+HTIB9<-lmer(TibRatio~zRangeTemp + zStage_cm + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTIB10<-lmer(TibRatio~zRangeTemp + zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTIB11<-lmer(TibRatio~zStage_cm + zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTIB12<-lmer(TibRatio~zRangeTemp + zMeanTemp + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+
+
+#Compare AICc 
+HTIBmods<-data.frame(c(1:12),c(AICc(HTIB1), AICc(HTIB2), AICc(HTIB3), AICc(HTIB4), AICc(HTIB5),AICc(HTIB6), AICc(HTIB7), AICc(HTIB8), AICc(HTIB9), AICc(HTIB10), AICc(HTIB11), AICc(HTIB12)))
+colnames(HTIBmods)<-c("TibModel","AICc")
+HTIBmods$deltaAICc<-round(HTIBmods$AICc-min(HTIBmods$AICc),2)
+HTIBmods<-HTIBmods[order(HTIBmods$deltaAIC),] #increasing delta
+HTIBmods
+#write.csv(HTIBmods, "TibModels_June2019.csv")
+
+
+
+
+##TAR FULL MODEL SET WITH RANDOM EFFECTS
+HTAR1<-lm(TarRatio~1, data=HYLEG_F)
+HTAR2<-lmer(TarRatio~1 + (1|SpeciesID), data=HYLEG_F)
+HTAR3<-lmer(TarRatio~1 + (1|SEGCODE), data=HYLEG_F)
+HTAR4<-lmer(TarRatio~1 + (1|SEGCODE) + (1|SpeciesID), data=HYLEG_F) 
+HTAR5<-lmer(TarRatio~zMeanTemp + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTAR6<-lmer(TarRatio~zRangeTemp + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+HTAR7<-lmer(TarRatio~zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+HTAR8<-lmer(TarRatio~zStage_cm + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+HTAR9<-lmer(TarRatio~zRangeTemp + zStage_cm + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTAR10<-lmer(TarRatio~zRangeTemp + zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTAR11<-lmer(TarRatio~zStage_cm + zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+HTAR12<-lmer(TarRatio~zMeanTemp + zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+
+HTARmods<-data.frame(c(1:12),c(AICc(HTAR1), AICc(HTAR2), AICc(HTAR3), AICc(HTAR4), AICc(HTAR5),AICc(HTAR6), AICc(HTAR7), AICc(HTAR8), AICc(HTAR9), AICc(HTAR10), AICc(HTAR11), AICc(HTAR12)))
+colnames(HTARmods)<-c("TibModel","AICc")
+HTARmods$deltaAICc<-round(HTARmods$AICc-min(HTARmods$AICc),2)
+HTARmods<-HTARmods[order(HTARmods$deltaAIC),] #increasing delta
+HTARmods
+write.csv(HTARmods, "TarModels_J2019.csv")
+
+
+
+##PLOTS
+summary(HTIB8)
+HYLEG_F$PredictTib<-predict(HTIB8)
+
+ggplot(aes(x=RangeTempC, y=TibRatio, fill=SpeciesID),  data=HYLEG_F) + geom_point(pch=21) + theme_bw() +
+	scale_fill_discrete(limits=c("H. occidentalis", "H. oslari", "H. confusa", "H. californica", "H. cockerelli", "H. quitchupaha"))	+
+	scale_fill_manual(values=c("navyblue","springgreen1","yellow", "red", "orange", "magenta")) +
+	geom_smooth(method=lm, lty=2, se=FALSE)
+
+
+ggplot(aes(x=Stage_cm, y=TibRatio, col=SpeciesID),  data=HYLEG_F) + geom_point()+ geom_smooth(method='lm', lty=2, colour="black") + theme_bw()
+ggplot(aes(x=Stage_cm, y=TarRatio, col=SpeciesID),  data=HYLEG_F) + geom_point()+ geom_smooth(method='lm', lty=2, colour="black") + theme_bw()
+
+ggplot(aes(x=MeanQKM, y=TibRatio, col=SpeciesID),  data=HYLEG_F) + geom_point() + geom_smooth(method='lm', lty=2, colour="black") + theme_bw()
+ggplot(aes(x=MeanQKM, y=TarRatio, col=SpeciesID),  data=HYLEG_F) + geom_point()+ geom_smooth(method='lm', lty=2, colour="black") + theme_bw()
+
+
+
+
+
+
+
+
+##GET P VALUES USING CHI SQUARE (NOT INCLUDED IN TABLE)
+drop1(HTIB1, test="Chisq") #No value - nothing to drop?
+ranova(HTIB2, test="Chisq") # p values for raneff using the package lmerTest
+ranova(HTIB3, test="Chisq")
+ranova(HTIB4, test="Chisq")
+drop1(HTIB5, test="Chisq")
+drop1(HTIB6, test="Chisq")
+drop1(HTIB7, test="Chisq")
+drop1(HTIB8, test="Chisq")
+drop1(HTIB9, test="Chisq")
+drop1(HTIB10, test="Chisq")
+drop1(HTIB11, test="Chisq")
+
+##Manually making new model with one less variable? Not sure this is right
+HTIB11x1<- lmer(TibRatio~zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+anova(HTIB11, HTIB11x1, test="Chisq")
+HTIB12x1<- lmer(TibRatio~zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
+anova(HTIB12, HTIB12x1, test="Chisq")
+
+
+
+
+
+
+
+
+
+
+###RUN SEPERATE MODEL SETS FOR EACH SPECIES
+
+#HYOS
+		HYOSleg<-HYLEG_F[HYLEG_F$SpeciesID=="H. oslari",]
+		dim(HYOSleg)
+		length(unique(HYOSleg$SEGCODE))
+
+			##TIB FULL MODEL SET WITH RANDOM EFFECTS
+			HTIB1<-lm(TibRatio~1, data=HYOSleg)
+			HTIB2<-lmer(TibRatio~1 + (1|SEGCODE), data=HYOSleg)
+			HTIB3<-lmer(TibRatio~zMeanTemp  + (1|SEGCODE), data=HYOSleg)
+			HTIB4<-lmer(TibRatio~zRangeTemp + (1|SEGCODE), data=HYOSleg) 
+			HTIB5<-lmer(TibRatio~zMeanQ + (1|SEGCODE), data=HYOSleg) 
+			HTIB6<-lmer(TibRatio~zStage_cm + (1|SEGCODE), data=HYOSleg)
+			
+			HTIBmods<-data.frame(c(1:6),c(AICc(HTIB1), AICc(HTIB2), AICc(HTIB3), AICc(HTIB4), AICc(HTIB5),AICc(HTIB6)))
+			colnames(HTIBmods)<-c("HYOS_TibModel","AICc")
+			HTIBmods$deltaAICc<-round(HTIBmods$AICc-min(HTIBmods$AICc),2)
+			HTIBmods<-HTIBmods[order(HTIBmods$deltaAICc),] #increasing delta
+			HTIBmods
+			write.csv(HTIBmods, "HYOS_TibModels_May2019.csv")
+
+
+			##TAR FULL MODEL SET WITH RANDOM EFFECTS
+			HTAR1<-lm(TarRatio~1, data=HYOSleg)
+			HTAR2<-lmer(TarRatio~1 + (1|SEGCODE), data=HYOSleg)
+			HTAR3<-lmer(TarRatio~zMeanTemp  + (1|SEGCODE), data=HYOSleg)
+			HTAR4<-lmer(TarRatio~zRangeTemp + (1|SEGCODE), data=HYOSleg) 
+			HTAR5<-lmer(TarRatio~zMeanQ + (1|SEGCODE), data=HYOSleg) 
+			HTAR6<-lmer(TarRatio~zStage_cm + (1|SEGCODE), data=HYOSleg)
+			
+			HTARmods<-data.frame(c(1:6),c(AICc(HTAR1), AICc(HTAR2), AICc(HTAR3), AICc(HTAR4), AICc(HTAR5),AICc(HTAR6)))
+			colnames(HTARmods)<-c("HYOS_TibModel","AICc")
+			HTARmods$deltaAICc<-round(HTARmods$AICc-min(HTARmods$AICc),2)
+			HTARmods<-HTARmods[order(HTARmods$deltaAICc),] #increasing delta
+			HTARmods
+			write.csv(HTARmods, "HYOS_TarModels_May2019.csv")
+
+
+
+
+
+#HYOC
+		HYOCleg<-HYLEG_F[HYLEG_F$SpeciesID=="H. occidentalis",]
+		dim(HYOCleg)
+		length(unique(HYOCleg$SEGCODE))
+		
+					##TIB FULL MODEL SET WITH RANDOM EFFECTS
+			HTIB1<-lm(TibRatio~1, data=HYOCleg)
+			HTIB2<-lmer(TibRatio~1 + (1|SEGCODE), data=HYOCleg)
+			HTIB3<-lmer(TibRatio~zMeanTemp  + (1|SEGCODE), data=HYOCleg)
+			HTIB4<-lmer(TibRatio~zRangeTemp + (1|SEGCODE), data=HYOCleg) 
+			HTIB5<-lmer(TibRatio~zMeanQ + (1|SEGCODE), data=HYOCleg) 
+			HTIB6<-lmer(TibRatio~zStage_cm + (1|SEGCODE), data=HYOCleg)
+			
+			HTIBmods<-data.frame(c(1:6),c(AICc(HTIB1), AICc(HTIB2), AICc(HTIB3), AICc(HTIB4), AICc(HTIB5),AICc(HTIB6)))
+			colnames(HTIBmods)<-c("HYOC_TibModel","AICc")
+			HTIBmods$deltaAICc<-round(HTIBmods$AICc-min(HTIBmods$AICc),2)
+			HTIBmods<-HTIBmods[order(HTIBmods$deltaAICc),] #increasing delta
+			HTIBmods
+			write.csv(HTIBmods, "HYOC_TibModels_May2019.csv")
+
+
+			##TAR FULL MODEL SET WITH RANDOM EFFECTS
+			HTAR1<-lm(TarRatio~1, data=HYOCleg)
+			HTAR2<-lmer(TarRatio~1 + (1|SEGCODE), data=HYOCleg)
+			HTAR3<-lmer(TarRatio~zMeanTemp  + (1|SEGCODE), data=HYOCleg)
+			HTAR4<-lmer(TarRatio~zRangeTemp + (1|SEGCODE), data=HYOCleg) 
+			HTAR5<-lmer(TarRatio~zMeanQ + (1|SEGCODE), data=HYOCleg) 
+			HTAR6<-lmer(TarRatio~zStage_cm + (1|SEGCODE), data=HYOCleg)
+			
+			HTARmods<-data.frame(c(1:6),c(AICc(HTAR1), AICc(HTAR2), AICc(HTAR3), AICc(HTAR4), AICc(HTAR5),AICc(HTAR6)))
+			colnames(HTARmods)<-c("HYOC_TibModel","AICc")
+			HTARmods$deltaAICc<-round(HTARmods$AICc-min(HTARmods$AICc),2)
+			HTARmods<-HTARmods[order(HTARmods$deltaAICc),] #increasing delta
+			HTARmods
+			write.csv(HTARmods, "HYOC_TarModels_May2019.csv")
+
+
+
+#HYCO
+		HYCOleg<-HYLEG_F[HYLEG_F$SpeciesID=="H. confusa",]
+		dim(HYCOleg)
+		length(unique(HYCOleg$SEGCODE))
+		
+					##TIB FULL MODEL SET WITH RANDOM EFFECTS
+			HTIB1<-lm(TibRatio~1, data=HYCOleg)
+			HTIB2<-lmer(TibRatio~1 + (1|SEGCODE), data=HYCOleg)
+			HTIB3<-lmer(TibRatio~zMeanTemp  + (1|SEGCODE), data=HYCOleg)
+			HTIB4<-lmer(TibRatio~zRangeTemp + (1|SEGCODE), data=HYCOleg) 
+			HTIB5<-lmer(TibRatio~zMeanQ + (1|SEGCODE), data=HYCOleg) 
+			HTIB6<-lmer(TibRatio~zStage_cm + (1|SEGCODE), data=HYCOleg)
+			
+			HTIBmods<-data.frame(c(1:6),c(AICc(HTIB1), AICc(HTIB2), AICc(HTIB3), AICc(HTIB4), AICc(HTIB5),AICc(HTIB6)))
+			colnames(HTIBmods)<-c("HYCO_TibModel","AICc")
+			HTIBmods$deltaAICc<-round(HTIBmods$AICc-min(HTIBmods$AICc),2)
+			HTIBmods<-HTIBmods[order(HTIBmods$deltaAICc),] #increasing delta
+			HTIBmods
+			write.csv(HTIBmods, "HYCO_TibModels_May2019.csv")
+
+
+			##TAR FULL MODEL SET WITH RANDOM EFFECTS
+			HTAR1<-lm(TarRatio~1, data=HYCOleg)
+			HTAR2<-lmer(TarRatio~1 + (1|SEGCODE), data=HYCOleg)
+			HTAR3<-lmer(TarRatio~zMeanTemp  + (1|SEGCODE), data=HYCOleg)
+			HTAR4<-lmer(TarRatio~zRangeTemp + (1|SEGCODE), data=HYCOleg) 
+			HTAR5<-lmer(TarRatio~zMeanQ + (1|SEGCODE), data=HYCOleg) 
+			HTAR6<-lmer(TarRatio~zStage_cm + (1|SEGCODE), data=HYCOleg)
+			
+			HTARmods<-data.frame(c(1:6),c(AICc(HTAR1), AICc(HTAR2), AICc(HTAR3), AICc(HTAR4), AICc(HTAR5),AICc(HTAR6)))
+			colnames(HTARmods)<-c("HYCO_TibModel","AICc")
+			HTARmods$deltaAICc<-round(HTARmods$AICc-min(HTARmods$AICc),2)
+			HTARmods<-HTARmods[order(HTARmods$deltaAICc),] #increasing delta
+			HTARmods
+			write.csv(HTARmods, "HYCO_TarModels_May2019.csv")
+
+
+
+
+
+#HYCA ##TOTALLY RIDICULOUS TO DO, THERE IS ONLY ONE SEGMENT ##
+		HYCAleg<-HYLEG_F[HYLEG_F$SpeciesID=="H. californica",]
+		dim(HYCAleg)
+		length(unique(HYCAleg$SEGCODE))
+
+			##TIB FULL MODEL SET NO RANDOM EFFECT (only one segment)
+			HTIB1<-lm(TibRatio~1, data=HYCAleg)
+			HTIB3<-lm(TibRatio~zMeanTemp , data=HYCAleg)
+			HTIB4<-lm(TibRatio~zRangeTemp, data=HYCAleg) 
+			HTIB5<-lm(TibRatio~zLat, data=HYCAleg)
+			HTIB6<-lm(TibRatio~zMeanQ, data=HYCAleg) 
+			HTIB7<-lm(TibRatio~zStage_cm, data=HYCAleg)
+			HTIB8<-lm(TibRatio~zJul, data=HYCAleg)
+
+			HTIBmods<-data.frame(c(1, 3:8),c(AIC(HTIB1), AIC(HTIB3), AIC(HTIB4), AIC(HTIB5),AIC(HTIB6), AIC(HTIB7), AIC(HTIB8)))
+			colnames(HTIBmods)<-c("HYCA_TibModel","AIC")
+			HTIBmods$deltaAIC<-round(HTIBmods$AIC-min(HTIBmods$AIC),2)
+			HTIBmods<-HTIBmods[order(HTIBmods$deltaAIC),] #increasing delta
+			HTIBmods
+			write.csv(HTIBmods, "HYCA_TibModels_May2019.csv")
+
+			#BEST MODEL TIB#
+			summary(HTIB9)
+			ranef(HTIB9)
+
+
+
+			##TAR FULL MODEL SET NO RANDOM EFFECT (only one segment)
+			HTAR1<-lm(TarRatio~1, data=HYCAleg)
+			HTAR3<-lm(TarRatio~zMeanTemp, data=HYCAleg)
+			HTAR4<-lm(TarRatio~zRangeTemp, data=HYCAleg) 
+			HTAR5<-lm(TarRatio~zLat, data=HYCAleg)
+			HTAR6<-lm(TarRatio~zMeanQ, data=HYCAleg) 
+			HTAR7<-lm(TarRatio~zStage_cm, data=HYCAleg)
+			HTAR8<-lm(TarRatio~zJul, data=HYCAleg)
+
+			HTARmods<-data.frame(c(1, 3:8),c(AIC(HTAR1), AIC(HTAR3), AIC(HTAR4), AIC(HTAR5),AIC(HTAR6), AIC(HTAR7), AIC(HTAR8)))
+			colnames(HTARmods)<-c("HYCA_TibModel","AIC")
+			HTARmods$deltaAIC<-round(HTARmods$AIC-min(HTARmods$AIC),2)
+			HTARmods<-HTARmods[order(HTARmods$deltaAIC),] #increasing delta
+			HTARmods
+			write.csv(HTARmods, "HYCA_TibModels_May2019.csv")
+
+			#BEST MODEL TAR#
+			summary(HTAR9)
+			ranef(HTAR9)
+
+#H. cockerelli - one segment (JUAN!) not running
+		HCOCleg<-HYLEG_F[HYLEG_F$SpeciesID=="H. cockerelli",]
+		dim(HCOCleg)
+		length(unique(HCOCleg$SEGCODE))
+		
+#H. quitchupaha - one segment not running
+
+
+
+
+
+
+
+
+
+
+
+##GGPLOTS 
+
+#ADD MODEL HTIB6, EXCLUDE RANDOM EFFECTS FOR STRAIGHT LINE
+HTIB6lm<-lm(TibRatio~zRangeTemp , data=HYLEG_F) 
+HYLEG_F$fit<-predict(HTIB6lm)
+
+##LEGS
+TibRT<-ggplot(HYLEG_F,aes(x=RangeTempC, y=TibRatio))+
+	geom_jitter(cex=3, aes(fill=Species), alpha = 0.8,width=.01, pch=21)+
+	scale_fill_manual(values=c("springgreen1","navyblue","yellow","orange","maroon1","red")) +
+	theme_bw(base_size=13) + xlab("Mean temperature range (°C)") + ylab("Tibial ratio (length: width; mm)")+
+	theme(legend.position="bottom", legend.text=element_text(face="italic", size=13))+
+	geom_line(aes(y=fit, x=RangeTempC), size=0.6, lty=2)
+TibRT
+
+
+##plot random effects of HTIB6
+library(lme4)
+HTIB6<-lmer(TibRatio~zRangeTemp + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F) 
+ranef(HTIB6)
+
+
+randoms<-ranef(HTIB6, condVar = TRUE)
+qq <- attr(ranef(HTIB6, condVar = TRUE)[[1]], "SEGCODE")
+qq
+
+
+
+
+
+
+
+plot(ranef(HTIB6), pch=21)$SEGCODE
+text(ranef(HTIB6)~1,labels=unique(HY2$SEGCODE), cex=0.9, font=2)$SEGCODE
+
+
+
+qqmath(ranef(HTIB6, postVar = TRUE), strip = FALSE)$SpeciesID
+
+
+HTIB6ranef<-ranef(HTIB6)
+dotplot(HTIB6ranef)
+
+REsim <- function(x, whichel=NULL, nsims){
+  require(plyr)
+  mysim <- sim(x, n.sims = nsims)
+  if(missing(whichel)){
+    dat <- plyr::adply(mysim@ranef[[1]], c(2, 3), plyr::each(c(mean, median, sd)))
+    warning("Only returning 1st random effect because whichel not specified")
+  } else{
+    dat <- plyr::adply(mysim@ranef[[whichel]], c(2, 3), plyr::each(c(mean, median, sd)))
+  }
+  return(dat)
+}
+
+
+REsim(HTIB6, whichel="SpeciesID", nsims=1000)
+
+
+##LEGS
+TibRT<-ggplot(HYLEG_F,aes(x=RangeTempC, y=TibRatio))+
+	geom_jitter(cex=3, aes(fill=Species), alpha = 0.8,width=.01, pch=21)+
+	scale_fill_manual(values=c("springgreen1","navyblue","yellow","red","orange","maroon1")) +
+	theme_bw(base_size=13) + xlab("Temperature range") + ylab("Tibial ratio (length: width; mm)")+
+	theme(legend.position="bottom", legend.text=element_text(face="italic", size=13))+
+	geom_smooth(method="lm", se=FALSE, lty=2, colour="black")
+TibRT
+
+
+
+
+
+TarRT<-ggplot(HYLEG_F,aes(x=RangeTempC, y=TarRatio))+
+	ggtitle("Tarsi narrow at high latitudes...great.")+
+	geom_jitter(cex=3, aes(fill=Species), alpha = 0.8,width=.01, pch=21)+
+	scale_fill_manual(values=c("springgreen1","navyblue","yellow","orange","maroon1")) +
+	theme_bw(base_size=13) + xlab("Latitude") + ylab("Tarial ratio (length: width; mm)")+
+	theme(legend.position="bottom", legend.text=element_text(face="italic", size=13))+
+	geom_smooth(method="lm", se=FALSE, lty=2, colour="black")
+TarRT
+
+
+
+
+
+##Another table for the appendix! Mean tibial and tarsal ratios per species by segment
+head(HYLEG)
+HYLEG_M<-HYLEG[HYLEG$Sex=="M",]
+HYLEG_F<-HYLEG[HYLEG$Sex=="F",]
+
+
+with(HYLEG_F, tapply(TibRatio,list(Species, SEGCODE), FUN = function(x) mean(x)))
+with(HYLEG_M, tapply(TibRatio,list(Species, SEGCODE), FUN = function(x) mean(x)))
+
+
+
+
+
+
