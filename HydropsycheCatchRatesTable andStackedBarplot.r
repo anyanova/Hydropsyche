@@ -77,3 +77,5 @@ HYbar<-ggplot(mHYcatch,aes(x = SegCode, y=CatchRate, fill=as.factor(mHYcatch$Spp
 	theme_bw(base_size=20)
 HYbar
 
+
+				     
