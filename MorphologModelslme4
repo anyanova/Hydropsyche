@@ -5,6 +5,7 @@ library(plyr)
 library(lme4)
 library(lubridate)
 library(AICcmodavg)
+library(lmerTest) #SWEET package, expands the anova output for lme4 to includeF and P values
 
 
 #Read in HYmorphologydata.csv
@@ -44,7 +45,8 @@ HTIBmods<-HTIBmods[order(HTIBmods$deltaAIC),] #increasing delta
 HTIBmods
 #write.csv(HTIBmods, "TibModels_June2019.csv")
 
-
+##goodness of fit for best model (HTIB6), make sure the lmerTest library is loaded
+anova(HTIB6)
 
 
 ##TAR FULL MODEL SET WITH RANDOM EFFECTS
@@ -92,35 +94,7 @@ ggplot(aes(x=MeanQKM, y=TarRatio, col=SpeciesID),  data=HYLEG_F) + geom_point()+
 
 
 
-
-##GET P VALUES USING CHI SQUARE (NOT INCLUDED IN TABLE)
-drop1(HTIB1, test="Chisq") #No value - nothing to drop?
-ranova(HTIB2, test="Chisq") # p values for raneff using the package lmerTest
-ranova(HTIB3, test="Chisq")
-ranova(HTIB4, test="Chisq")
-drop1(HTIB5, test="Chisq")
-drop1(HTIB6, test="Chisq")
-drop1(HTIB7, test="Chisq")
-drop1(HTIB8, test="Chisq")
-drop1(HTIB9, test="Chisq")
-drop1(HTIB10, test="Chisq")
-drop1(HTIB11, test="Chisq")
-
-##Manually making new model with one less variable? Not sure this is right
-HTIB11x1<- lmer(TibRatio~zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
-anova(HTIB11, HTIB11x1, test="Chisq")
-HTIB12x1<- lmer(TibRatio~zMeanQ + (1|SpeciesID) + (1|SEGCODE), data=HYLEG_F)
-anova(HTIB12, HTIB12x1, test="Chisq")
-
-
-
-
-
-
-
-
-
-
+###########################################
 ###RUN SEPERATE MODEL SETS FOR EACH SPECIES
 
 #HYOS
