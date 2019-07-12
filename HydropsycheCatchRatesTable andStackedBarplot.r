@@ -35,29 +35,60 @@ sum(HY7$HCOC) #10, 0.06%
 
 
 
-##Table of catch rate by SEGCODE, one sp at a time
-HYCA<-as.data.frame(with(HY7, tapply(HYCA,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
-colnames(HYCA)<-"HYCA"
+##Table of catch rate by reach ID
+	HYCA<-as.data.frame(with(HY7, tapply(HYCA,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
+	colnames(HYCA)<-"HYCA"
 
-HCOC<-as.data.frame(with(HY7, tapply(HCOC,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
-colnames(HCOC)<-"HCOC"
+	HCOC<-as.data.frame(with(HY7, tapply(HCOC,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
+	colnames(HCOC)<-"HCOC"
 
-HYCO<-as.data.frame(with(HY7, tapply(HYCO,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
-colnames(HYCO)<-"HYCO"
+	HYCO<-as.data.frame(with(HY7, tapply(HYCO,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
+	colnames(HYCO)<-"HYCO"
 
-HYOC<-as.data.frame(with(HY7, tapply(HYOC,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
-colnames(HYOC)<-"HYOC"
+	HYOC<-as.data.frame(with(HY7, tapply(HYOC,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
+	colnames(HYOC)<-"HYOC"
 
-HYOS<-as.data.frame(with(HY7, tapply(HYOS,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
-colnames(HYOS)<-"HYOS"
+	HYOS<-as.data.frame(with(HY7, tapply(HYOS,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
+	colnames(HYOS)<-"HYOS"
 
-HYQU<-as.data.frame(with(HY7, tapply(HYQU,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
-colnames(HYQU)<-"HYQU"
+	HYQU<-as.data.frame(with(HY7, tapply(HYQU,list(SEGCODE), FUN = function(x) mean(na.omit(x)))))
+	colnames(HYQU)<-"HYQU"
 
 HYcatch<-cbind(HYCA,HCOC,HYCO,HYOC,HYOS,HYQU)
 HYcatch$SegCode<-rownames(HYcatch)
 HYcatch
 
+				     
+				     
+
+##How many individuals per species per reach?
+	nHYCA<-as.data.frame(with(HY7, tapply(HYCA,list(SEGCODE), FUN = function(x) sum(na.omit(x)))))
+	colnames(nHYCA)<-"HYCA"
+
+	nHCOC<-as.data.frame(with(HY7, tapply(HCOC,list(SEGCODE), FUN = function(x) sum(na.omit(x)))))
+	colnames(nHCOC)<-"HCOC"
+
+	nHYCO<-as.data.frame(with(HY7, tapply(HYCO,list(SEGCODE), FUN = function(x) sum(na.omit(x)))))
+	colnames(nHYCO)<-"HYCO"
+
+	nHYOC<-as.data.frame(with(HY7, tapply(HYOC,list(SEGCODE), FUN = function(x) sum(na.omit(x)))))
+	colnames(nHYOC)<-"HYOC"
+
+	nHYOS<-as.data.frame(with(HY7, tapply(HYOS,list(SEGCODE), FUN = function(x) sum(na.omit(x)))))
+	colnames(nHYOS)<-"HYOS"
+
+	nHYQU<-as.data.frame(with(HY7, tapply(HYQU,list(SEGCODE), FUN = function(x) sum(na.omit(x)))))
+	colnames(nHYQU)<-"HYQU"
+
+HYn<-cbind(nHYCA,nHCOC,nHYCO,nHYOC,nHYOS,nHYQU)
+HYn$SegCode<-rownames(HYcatch)
+HYn
+
+#Total individuals per reach					    
+rowSums(HYn)
+				      
+				      
+				      
 ##stacked barplot for Fig1
 
 #melt dataframe
